@@ -1,0 +1,44 @@
+#ifndef KEYWORDS_HPP
+#define KEYWORDS_HPP
+
+#include <unordered_map>
+#include <string>
+
+typedef enum {
+	// Declaration
+	TOKEN_VAR,
+	TOKEN_CONST,
+
+	// Types
+	TOKEN_NUM,
+	TOKEN_STRING,
+	TOKEN_DECIMAL,
+	TOKEN_BOOL,
+
+	// Identifiers and literals
+	TOKEN_IDENTIFIER,
+	TOKEN_VALUE,
+
+	// Symbols
+	TOKEN_COLON,
+	TOKEN_EQUALS,
+	TOKEN_LPAREN,
+	TOKEN_RPAREN,
+	TOKEN_SEMICOLON,
+	TOKEN_COMMA,
+
+	// built-in functions
+	TOKEN_PRINTLN,
+}	t_keywords;
+
+static const std::unordered_map<std::string, t_keywords> keywords_map = {
+	{"var", TOKEN_VAR},
+	{"const", TOKEN_CONST},
+	{"num", TOKEN_NUM},
+	{"string", TOKEN_STRING},
+	{"decimal", TOKEN_DECIMAL},
+	{"bool", TOKEN_BOOL},
+	{"println", TOKEN_PRINTLN},
+};
+
+#endif // KEYWORDS_HPP
