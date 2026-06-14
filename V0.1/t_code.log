@@ -1,0 +1,10 @@
+var a: num = 42;
+var b: string = "hello";
+var c: decimal = 10.5;
+const d: bool = true;
+println(a);
+println(b);
+println(c);
+println(d);
+println("Hello World! This code has been writen in Kitsu script");
+println(a);

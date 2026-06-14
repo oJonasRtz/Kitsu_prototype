@@ -1,8 +1,14 @@
 #include "Core.class.hpp"
+#include "utils.hpp"
 
 typedef struct {
 	std::string output_file = "a.out";
 }	t_options;
+
+typedef struct {
+	std::string name;
+	std::vector<std::string> args;
+}	t_call_context;
 
 class BadKitty
 {
