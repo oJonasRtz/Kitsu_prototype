@@ -6,8 +6,9 @@
 #include <unordered_map>
 
 typedef struct {
-	std::string			name;
+	std::string					name;
 	std::vector<std::string>	args;
+	std::string					origin;
 }	t_call;
 
 typedef enum {
@@ -19,10 +20,11 @@ typedef enum {
 }	t_variable_type;
 
 typedef struct {
-	std::string	name;
-	std::string	value;
-	t_variable_type		type;
-	bool				is_const;
+	std::string		name;
+	std::string		value;
+	t_variable_type	type;
+	bool			is_const;
+	std::string		origin;
 }	t_variable;
 
 typedef struct {

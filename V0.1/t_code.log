@@ -1,10 +1,12 @@
-var a: num = 42;
-var b: string = "hello";
-var c: decimal = 10.5;
-const d: bool = true;
-println(a);
-println(b);
-println(c);
-println(d);
-println("Hello World! This code has been writen in Kitsu script");
-println(a);
+var a: num = 42 // Origin: main.kit
+var b: string = "hello" // Origin: main.kit
+var c: decimal = 10.5 // Origin: main.kit
+const d: bool = true // Origin: main.kit
+println(a); // Origin: main.kit
+println(b); // Origin: main.kit
+println(c); // Origin: main.kit
+println(d); // Origin: main.kit
+println("Hello World! This code has been writen in Kitsu script"); // Origin: main.kit
+println(a); // Origin: main.kit
+var hello: string = "Hello" // Origin: utils.kit
+println("Hello World"); // Origin: utils.kit

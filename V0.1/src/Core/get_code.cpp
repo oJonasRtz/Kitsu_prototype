@@ -1,11 +1,12 @@
 #include "Core.class.hpp"
 
-static bool handle_declaration(const std::vector<t_token> &tokens, t_code &code, size_t &i) {
+static bool handle_declaration(const std::vector<t_token> &tokens, t_code &code, size_t &i, const std::string &origin = "") {
 	if (tokens[i].type != TOKEN_DECLARATION)
 		return false;
 
 	t_variable var{};
 	var.is_const = tokens[i].value == "const";
+	var.origin = origin;
 	const std::unordered_map<std::string, t_variable_type> type_map = {
 		{"num", TYPE_NUM},
 		{"string", TYPE_STRING},
@@ -42,13 +43,14 @@ static bool handle_declaration(const std::vector<t_token> &tokens, t_code &code,
 	return true;
 }
 
-static bool handle_builtin(const std::vector<t_token> &tokens, t_code &code, size_t &i) 
+static bool handle_builtin(const std::vector<t_token> &tokens, t_code &code, size_t &i, const std::string &origin = "") 
 {
 	if (tokens[i].type != TOKEN_BUILTIN)
 		return false;
 
 	t_call call{};
 	call.name = tokens[i].value;
+	call.origin = origin;
 	i++;
 
 	while(i < tokens.size() && tokens[i].value != ";")
@@ -72,9 +74,9 @@ t_code KitsuCore::get_code(const std::string &source) {
 	size_t i = 0;
 	while(i < tokens.size())
 	{
-		if (handle_declaration(tokens, code, i))
+		if (handle_declaration(tokens, code, i, source))
 			continue;
-		if (handle_builtin(tokens, code, i))
+		if (handle_builtin(tokens, code, i, source))
 			continue;
 
 		i++;

@@ -26,6 +26,7 @@ bool BadKitty::compile(
 
 	for (const auto &file : source_files) {
 		t_code code = KitsuCore::get_code(file);
+
 		codes.push_back(code);
 	}
 
@@ -34,7 +35,7 @@ bool BadKitty::compile(
 	for (const auto& code : codes)
 	{
 		for (const auto& var : code.variables)
-			output += (var.is_const ? "const " : "var ") + var.name + ": " + type_to_string(var.type) + " = " + var.value + ";\n";
+			output += (var.is_const ? "const " : "var ") + var.name + ": " + type_to_string(var.type) + " = " + var.value + " // Origin: " + var.origin + "\n";
 		for (const auto& call : code.calls)
 		{
 			output += call.name + "(";
@@ -44,7 +45,7 @@ bool BadKitty::compile(
 				if (i < call.args.size() - 1)
 					output += ", ";
 			}
-			output += ");\n";
+			output += "); // Origin: " + call.origin + "\n";
 		}		
 	}
 	std::ofstream output_file("t_code.log");
