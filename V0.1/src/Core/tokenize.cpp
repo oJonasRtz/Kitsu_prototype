@@ -12,6 +12,7 @@ std::string token_to_string(const t_token &token)
 		{TOKEN_SYMBOL, "TOKEN_SYMBOL"},
 		{TOKEN_BUILTIN, "TOKEN_BUILTIN"},
 		{TOKEN_KEYWORD, "TOKEN_KEYWORD"},
+		{TOKEN_OPERATOR, "TOKEN_OPERATOR"},
 	};
 
 	auto it = token_type_strings.find(token.type);
@@ -21,129 +22,160 @@ std::string token_to_string(const t_token &token)
 	return "UNKNOWN_TOKEN: " + token.value;
 }
 
-static bool	issign(unsigned char c) {
-	return c == ':' || c == '='
-		|| c == '(' || c == ')'
-		|| c == ';' || c == ','
-		|| c == '+' || c == '-'
-		|| c == '*' || c == '/'
-		|| c == '%'
-		|| c == '!' || c == '&'
-		|| c == '|' || c == '^'
-		|| c == '<' || c == '>'
-		|| c == '{' || c == '}';
-}
-
 static void push_token(std::vector<t_token> &tokens, t_token_type type, const std::string &value) {
 	tokens.push_back({type, value});
 }
 
 std::vector<t_token> KitsuCore::tokenize(const std::string &source)
 {
-	std::vector<t_token> tokens;
+    std::vector<t_token> tokens;
 
-	// open file
-	std::ifstream file(source);
-	if (!file.is_open()) {
-		throw std::runtime_error("Could not open file: " + source);
-	}
+    std::ifstream file(source);
+    if (!file.is_open())
+        throw std::runtime_error("Could not open file: " + source);
 
-	std::string code((std::istreambuf_iterator<char>(file)),
-					 std::istreambuf_iterator<char>());
+    std::string code((std::istreambuf_iterator<char>(file)),
+                     std::istreambuf_iterator<char>());
 
-	// Tokenization logic goes here (similar to the lexer in V0.0)
-	for (size_t i = 0; i < code.size(); )
-	{
-		unsigned char current = static_cast<unsigned char>(code[i]);
+    size_t i = 0;
 
-		if (std::isspace(current)) {
-			++i;
-			continue;
-		}
+    while (i < code.size())
+    {
+        if (std::isspace(code[i]))
+        {
+            ++i;
+            continue;
+        }
 
-		// Taking signs
-		if (issign(current)) {
-			std::string symbol(1, code[i++]);
-			push_token(tokens, TOKEN_SYMBOL, symbol);
-			continue;
-		}
+        std::string match;
+        t_token_type type;
+        bool found = false;
 
-		// Taking strings
-		if (code[i] == '"')
-		{
-			std::string literal;
-			literal += code[i++]; // include the opening quote
+        /*
+        ======================================================
+        1. TRY MAXIMAL MATCH FROM TOKEN MAP (operators/symbols)
+        ======================================================
+        */
+        for (int len = 3; len > 0; --len)
+        {
+            if (i + len > code.size())
+                continue;
 
-			while (i < code.size() && code[i] != '"')
-				literal += code[i++];
+            std::string candidate = code.substr(i, len);
 
-			if (i < code.size())
-				literal += code[i++]; // include the closing quote
+            auto it = token_map.find(candidate);
+            if (it != token_map.end())
+            {
+                match = candidate;
+                type = it->second;
+                i += len;
+                found = true;
+                break;
+            }
+        }
 
-			push_token(tokens, TOKEN_LITERAL, literal);
-			continue;
-		}
+        if (found)
+        {
+            push_token(tokens, type, match);
+            continue;
+        }
 
-		// Taking digits
-		if (std::isdigit(current))
-		{
-			std::string number;
-			bool has_decimal = false;
+        /*
+        =====================
+        2. STRING LITERAL
+        =====================
+        */
+        if (code[i] == '"')
+        {
+            size_t start = i++;
+            while (i < code.size() && code[i] != '"')
+                ++i;
 
-			while (i < code.size()) {
-				unsigned char c = static_cast<unsigned char>(code[i]);
+            if (i < code.size())
+                ++i;
 
-				if (std::isdigit(c)) {
-					number += code[i++];
-					continue;
-				}
+            push_token(tokens, TOKEN_LITERAL,
+                        code.substr(start, i - start));
+            continue;
+        }
 
-				if (c == '.' && !has_decimal) {
-					has_decimal = true;
-					number += code[i++];
-					continue;
-				}
+        /*
+        =====================
+        3. NUMBER
+        =====================
+        */
+        if (std::isdigit(code[i]))
+        {
+            size_t start = i;
+            bool dot = false;
 
-				break;
-			}
+            while (i < code.size())
+            {
+                if (std::isdigit(code[i]))
+                    ++i;
+                else if (code[i] == '.' && !dot)
+                {
+                    dot = true;
+                    ++i;
+                }
+                else
+                    break;
+            }
 
-			push_token(tokens, TOKEN_LITERAL, number);
-			continue;
-		}
+            push_token(tokens, TOKEN_LITERAL,
+                        code.substr(start, i - start));
+            continue;
+        }
 
-		// Taking words (identifiers, keywords)
-		if (std::isalpha(current) || current == '_')
-		{
-			std::string word;
-			while (i < code.size()) {
-				unsigned char c = static_cast<unsigned char>(code[i]);
-				if (!std::isalnum(c) && c != '_')
-					break;
-				word += code[i++];
-			}
+        /*
+        =====================
+        4. WORD (IDENT / KEYWORD)
+        =====================
+        */
+        if (std::isalpha(code[i]) || code[i] == '_')
+        {
+            size_t start = i;
 
-			auto it = token_map.find(word);
-			if (it != token_map.end())
-				push_token(tokens, it->second, word);
-			else if (word == "true" || word == "false")
-				push_token(tokens, TOKEN_LITERAL, word);
-			else
-				push_token(tokens, TOKEN_IDENTIFIER, word);
-			continue;
-		}
-	}
+            while (i < code.size() &&
+                  (std::isalnum(code[i]) || code[i] == '_'))
+                ++i;
 
-	// Print Tokens for debugging
-	std::string log;
-	for (const auto &token : tokens)
-		log += token_to_string(token) + " : " + token.value + "\n";
-	std::ofstream log_file("tokens.log");
-	if (log_file.is_open())
-		log_file << log;
-	else
-		std::cerr << "Could not open log file for writing." << std::endl;
-	log_file.close();
+            std::string word = code.substr(start, i - start);
 
-	file.close();
-	return tokens;
+            auto it = token_map.find(word);
+            if (it != token_map.end())
+                push_token(tokens, it->second, word);
+            else if (word == "true" || word == "false")
+                push_token(tokens, TOKEN_LITERAL, word);
+            else
+                push_token(tokens, TOKEN_IDENTIFIER, word);
+
+            continue;
+        }
+
+        /*
+        =====================
+        5. FALLBACK SAFETY
+        =====================
+        */
+        push_token(tokens, TOKEN_IDENTIFIER, std::string(1, code[i]));
+        ++i;
+    }
+
+    /*
+    =====================
+    DEBUG LOG
+    =====================
+    */
+    std::string log;
+    for (const auto &t : tokens)
+        log += token_to_string(t) + " : " + t.value + "\n";
+
+    std::ofstream log_file("tokens.log");
+    if (log_file.is_open())
+        log_file << log;
+    else
+        std::cerr << "Could not open log file\n";
+
+    return tokens;
 }

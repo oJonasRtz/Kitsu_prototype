@@ -11,6 +11,7 @@ typedef enum {
     TOKEN_SYMBOL,
     TOKEN_BUILTIN,
 	TOKEN_KEYWORD,
+	TOKEN_OPERATOR,
 }	t_token_type;
 
 typedef struct {
@@ -44,6 +45,59 @@ static const std::unordered_map<std::string, t_token_type> token_map = {
 	{"print", TOKEN_BUILTIN},
 	{"eprintln", TOKEN_BUILTIN},
 	{"eprint", TOKEN_BUILTIN},
+
+	// Markers
+	{":", TOKEN_SYMBOL},
+	{"(", TOKEN_SYMBOL},
+	{")", TOKEN_SYMBOL},
+	{";", TOKEN_SYMBOL},
+	{",", TOKEN_SYMBOL},
+	{"?", TOKEN_SYMBOL},
+	{"{", TOKEN_SYMBOL},
+	{"}", TOKEN_SYMBOL},
+	{"[", TOKEN_SYMBOL},
+	{"]", TOKEN_SYMBOL},
+	{"?", TOKEN_SYMBOL},
+
+	// Operators
+		// Assignment
+	{"=", TOKEN_OPERATOR},
+	{"+=", TOKEN_OPERATOR},
+	{"-=", TOKEN_OPERATOR},
+	{"*=", TOKEN_OPERATOR},
+	{"/=", TOKEN_OPERATOR},
+	{"%=", TOKEN_OPERATOR},
+	{"&=", TOKEN_OPERATOR},
+	{"|=", TOKEN_OPERATOR},
+	{"^=", TOKEN_OPERATOR},
+	{"<<=", TOKEN_OPERATOR},
+	{">>=", TOKEN_OPERATOR},
+
+		// Arithmetic
+	{"+", TOKEN_OPERATOR},
+	{"-", TOKEN_OPERATOR},
+	{"*", TOKEN_OPERATOR},
+	{"/", TOKEN_OPERATOR},
+	{"%", TOKEN_OPERATOR},
+
+		// Logical
+	{"<", TOKEN_OPERATOR},
+	{">", TOKEN_OPERATOR},
+	{"!", TOKEN_OPERATOR},
+	{"&&", TOKEN_OPERATOR},
+	{"||", TOKEN_OPERATOR},
+	{"==", TOKEN_OPERATOR},
+	{"!=", TOKEN_OPERATOR},
+	{">=", TOKEN_OPERATOR},
+	{"<=", TOKEN_OPERATOR},
+
+		// bitwise
+	{"&", TOKEN_OPERATOR},
+	{"|", TOKEN_OPERATOR},
+	{"^", TOKEN_OPERATOR},
+	{"<<", TOKEN_OPERATOR},
+	{">>", TOKEN_OPERATOR},
+	{"~", TOKEN_OPERATOR},
 };
 
 #endif // TOKEN_HPP
