@@ -29,6 +29,9 @@ typedef enum {
 
 	// built-in functions
 	TOKEN_PRINTLN,
+	TOKEN_PRINT,
+	TOKEN_EPRINTLN,
+	TOKEN_EPRINT,
 }	t_keywords;
 
 static const std::unordered_map<std::string, t_keywords> keywords_map = {
@@ -39,6 +42,9 @@ static const std::unordered_map<std::string, t_keywords> keywords_map = {
 	{"decimal", TOKEN_DECIMAL},
 	{"bool", TOKEN_BOOL},
 	{"println", TOKEN_PRINTLN},
+	{"print", TOKEN_PRINT},
+	{"eprintln", TOKEN_EPRINTLN},
+	{"eprint", TOKEN_EPRINT},
 };
 
 #endif // KEYWORDS_HPP

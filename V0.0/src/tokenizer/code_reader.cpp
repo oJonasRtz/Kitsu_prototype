@@ -45,8 +45,7 @@ t_code	code_reader(const std::vector<t_token> &tokens)
 		}
 		else if (tokens[i].type == TOKEN_PRINTLN)
 		{
-			t_println println{};
-
+			t_call call{};
 			i++;
 
 			while (i < tokens.size() && tokens[i].type != TOKEN_SEMICOLON)
@@ -54,13 +53,13 @@ t_code	code_reader(const std::vector<t_token> &tokens)
 				if (tokens[i].type == TOKEN_IDENTIFIER ||
 					tokens[i].type == TOKEN_VALUE)
 				{
-					println.target = tokens[i].value;
+					call.args.push_back(tokens[i].value);
 				}
 
 				i++;
 			}
 
-			code.println_calls.push_back(println);
+			code.calls.push_back(call);
 		}
 
 		i++;
