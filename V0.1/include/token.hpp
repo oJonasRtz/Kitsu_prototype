@@ -18,6 +18,9 @@ typedef struct {
 	t_token_type	type;
 
 	const std::string value;
+
+	int line;
+	int column;
 }	t_token;
 
 #include <unordered_map>

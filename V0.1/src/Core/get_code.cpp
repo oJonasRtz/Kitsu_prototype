@@ -6,7 +6,10 @@ static bool handle_declaration(const std::vector<t_token> &tokens, t_code &code,
 
 	t_variable var{};
 	var.is_const = tokens[i].value == "const";
-	var.origin = origin;
+	var.origin.file = origin;
+	var.origin.line = tokens[i].line;
+	var.origin.column = tokens[i].column;
+
 	const std::unordered_map<std::string, t_variable_type> type_map = {
 		{"num", TYPE_NUM},
 		{"string", TYPE_STRING},
@@ -50,7 +53,9 @@ static bool handle_builtin(const std::vector<t_token> &tokens, t_code &code, siz
 
 	t_call call{};
 	call.name = tokens[i].value;
-	call.origin = origin;
+	call.origin.file = origin;
+	call.origin.line = tokens[i].line;
+	call.origin.column = tokens[i].column;
 	i++;
 
 	while(i < tokens.size() && tokens[i].value != ";")

@@ -22,8 +22,8 @@ std::string token_to_string(const t_token &token)
 	return "UNKNOWN_TOKEN: " + token.value;
 }
 
-static void push_token(std::vector<t_token> &tokens, t_token_type type, const std::string &value) {
-	tokens.push_back({type, value});
+static void push_token(std::vector<t_token> &tokens, t_token_type type, const std::string &value, int line, int column) {
+    tokens.push_back({type, value, line, column});
 }
 
 std::vector<t_token> KitsuCore::tokenize(const std::string &source)
@@ -38,14 +38,31 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
                      std::istreambuf_iterator<char>());
 
     size_t i = 0;
+    int line = 1;
+    int column = 1;
+
+    auto advance = [&](char c)
+    {
+        if (c == '\n')
+        {
+            ++line;
+            column = 1;
+        }
+        else
+            ++column;
+    };
 
     while (i < code.size())
     {
-        if (std::isspace(code[i]))
+        if (std::isspace(static_cast<unsigned char>(code[i])))
         {
+            advance(code[i]);
             ++i;
             continue;
         }
+
+        int token_line = line;
+        int token_column = column;
 
         std::string match;
         t_token_type type;
@@ -68,6 +85,8 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
             {
                 match = candidate;
                 type = it->second;
+                for (int j = 0; j < len; ++j)
+                    advance(code[i + j]);
                 i += len;
                 found = true;
                 break;
@@ -76,7 +95,7 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
 
         if (found)
         {
-            push_token(tokens, type, match);
+            push_token(tokens, type, match, token_line, token_column);
             continue;
         }
 
@@ -88,14 +107,21 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
         if (code[i] == '"')
         {
             size_t start = i++;
+            advance('"');
             while (i < code.size() && code[i] != '"')
+            {
+                advance(code[i]);
                 ++i;
+            }
 
             if (i < code.size())
+            {
+                advance(code[i]);
                 ++i;
+            }
 
             push_token(tokens, TOKEN_LITERAL,
-                        code.substr(start, i - start));
+                        code.substr(start, i - start), token_line, token_column);
             continue;
         }
 
@@ -112,10 +138,14 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
             while (i < code.size())
             {
                 if (std::isdigit(code[i]))
+                {
+                    advance(code[i]);
                     ++i;
+                }
                 else if (code[i] == '.' && !dot)
                 {
                     dot = true;
+                    advance(code[i]);
                     ++i;
                 }
                 else
@@ -123,7 +153,7 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
             }
 
             push_token(tokens, TOKEN_LITERAL,
-                        code.substr(start, i - start));
+                        code.substr(start, i - start), token_line, token_column);
             continue;
         }
 
@@ -137,18 +167,21 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
             size_t start = i;
 
             while (i < code.size() &&
-                  (std::isalnum(code[i]) || code[i] == '_'))
+                  (std::isalnum(static_cast<unsigned char>(code[i])) || code[i] == '_'))
+            {
+                advance(code[i]);
                 ++i;
+            }
 
             std::string word = code.substr(start, i - start);
 
             auto it = token_map.find(word);
             if (it != token_map.end())
-                push_token(tokens, it->second, word);
+                push_token(tokens, it->second, word, token_line, token_column);
             else if (word == "true" || word == "false")
-                push_token(tokens, TOKEN_LITERAL, word);
+                push_token(tokens, TOKEN_LITERAL, word, token_line, token_column);
             else
-                push_token(tokens, TOKEN_IDENTIFIER, word);
+                push_token(tokens, TOKEN_IDENTIFIER, word, token_line, token_column);
 
             continue;
         }
@@ -158,7 +191,8 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
         5. FALLBACK SAFETY
         =====================
         */
-        push_token(tokens, TOKEN_IDENTIFIER, std::string(1, code[i]));
+        push_token(tokens, TOKEN_IDENTIFIER, std::string(1, code[i]), token_line, token_column);
+        advance(code[i]);
         ++i;
     }
 
@@ -169,7 +203,7 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
     */
     std::string log;
     for (const auto &t : tokens)
-        log += token_to_string(t) + " : " + t.value + "\n";
+        log += token_to_string(t) + " : " + t.value + " @ " + std::to_string(t.line) + ":" + std::to_string(t.column) + "\n";
 
     std::ofstream log_file("tokens.log");
     if (log_file.is_open())

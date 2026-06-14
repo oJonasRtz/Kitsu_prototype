@@ -6,9 +6,16 @@
 #include <unordered_map>
 
 typedef struct {
+	std::string file;
+	std::string function = "global";
+	int line;
+	int column;
+}	t_location;
+
+typedef struct {
 	std::string					name;
 	std::vector<std::string>	args;
-	std::string					origin;
+	t_location					origin;
 }	t_call;
 
 typedef enum {
@@ -24,7 +31,7 @@ typedef struct {
 	std::string		value;
 	t_variable_type	type;
 	bool			is_const;
-	std::string		origin;
+	t_location		origin;
 }	t_variable;
 
 typedef struct {
