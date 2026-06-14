@@ -134,9 +134,15 @@ std::vector<t_token> KitsuCore::tokenize(const std::string &source)
 	}
 
 	// Print Tokens for debugging
-	
+	std::string log;
 	for (const auto &token : tokens)
-		std::cout << token_to_string(token) << " : " << token.value << std::endl;
+		log += token_to_string(token) + " : " + token.value + "\n";
+	std::ofstream log_file("tokens.log");
+	if (log_file.is_open())
+		log_file << log;
+	else
+		std::cerr << "Could not open log file for writing." << std::endl;
+	log_file.close();
 
 	file.close();
 	return tokens;
